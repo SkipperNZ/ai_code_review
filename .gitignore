@@ -1,0 +1,14 @@
+.venv/
+node_modules/
+.cache/
+data/
+runs/
+*.local.json
+/configs/default.json
+*.local.yaml
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/

@@ -1,0 +1,413 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aicr:assessment:0.1.0",
+  "title": "AICR assessment v0.1",
+  "description": "Successful blinded teacher or human assessment. Cross-field and evidence semantics require the separate validator specified in docs/02-labeling-contract.md. Identity fields are assigned or verified by the harness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sample_id",
+    "run_id",
+    "context_mode",
+    "evaluability",
+    "correctness",
+    "claims",
+    "severity",
+    "complexity",
+    "utility",
+    "uncertainty_reasons",
+    "evidence",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "sample_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_mode": {
+      "type": "string",
+      "enum": [
+        "local",
+        "static",
+        "agent"
+      ]
+    },
+    "evaluability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "required_context",
+        "missing_context",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "sufficient",
+            "insufficient",
+            "not_applicable"
+          ]
+        },
+        "required_context": {
+          "type": "string",
+          "enum": [
+            "local",
+            "repository",
+            "external",
+            "preference",
+            "unknown"
+          ]
+        },
+        "missing_context": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "correctness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "partially_supported",
+            "refuted",
+            "unverifiable",
+            "not_applicable"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "kind",
+          "text",
+          "verdict",
+          "confidence",
+          "evidence_ids",
+          "rationale"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "factual",
+              "preference"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "partially_supported",
+              "refuted",
+              "unverifiable",
+              "not_applicable"
+            ]
+          },
+          "confidence": {
+            "$ref": "#/$defs/confidence"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale_id",
+        "value",
+        "basis",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "scale_id": {
+          "const": "severity-nit-minor-serious-critical-v1"
+        },
+        "value": {
+          "enum": [
+            "nit",
+            "minor",
+            "serious",
+            "critical",
+            null
+          ]
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "conditional",
+            "not_assessable"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "complexity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale_id",
+        "value",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "scale_id": {
+          "const": "complexity-1-5-v1"
+        },
+        "value": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 5
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "utility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relevance",
+        "specificity",
+        "actionability",
+        "recommended_action",
+        "action_confidence",
+        "rationale"
+      ],
+      "properties": {
+        "relevance": {
+          "$ref": "#/$defs/score"
+        },
+        "specificity": {
+          "$ref": "#/$defs/score"
+        },
+        "actionability": {
+          "$ref": "#/$defs/score"
+        },
+        "recommended_action": {
+          "type": "string",
+          "enum": [
+            "publish",
+            "rewrite",
+            "request_context",
+            "discard"
+          ]
+        },
+        "action_confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "uncertainty_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "missing_repository_context",
+          "missing_external_requirement",
+          "preference_dependent",
+          "ambiguous_wording",
+          "conflicting_evidence",
+          "historical_state_unknown",
+          "retrieval_incomplete",
+          "unsupported_language",
+          "other"
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "claim_id",
+          "snapshot_id",
+          "commit_sha",
+          "path",
+          "start_line",
+          "end_line",
+          "excerpt",
+          "source_chunk_id",
+          "relation"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "commit_sha": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "excerpt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_chunk_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supports",
+              "refutes",
+              "context"
+            ]
+          }
+        }
+      },
+      "minItems": 0
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Uncalibrated reported confidence; null means not supplied."
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 2
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

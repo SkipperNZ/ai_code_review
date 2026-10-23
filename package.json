@@ -1,0 +1,19 @@
+{
+  "name": "aicr-research-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "worker": "node worker/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test:worker": "node --test worker/*.test.ts"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "1.3.0",
+    "typebox": "1.3.27",
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "model": {
+    "base_url": "http://127.0.0.1:8000/v1",
+    "id": "SET_MODEL_ID",
+    "api_key_env": "MB_JUDGE_API_KEY",
+    "api_key_file": "",
+    "context_window": 32768,
+    "context_window_basis": "conservative_test_budget_not_verified_capacity",
+    "max_output_tokens": 8192,
+    "chat_template_kwargs": {
+      "enable_thinking": true
+    }
+  },
+  "limits": {
+    "wall_seconds": 600,
+    "max_turns": 8,
+    "max_tool_calls": 16,
+    "max_generated_tokens": 20000,
+    "max_source_chars": 72000,
+    "max_input_chars": 110000,
+    "max_read_lines": 160,
+    "max_tool_chars": 18000
+  },
+  "snapshot": {
+    "max_files": 15000,
+    "max_total_bytes": 80000000,
+    "max_file_bytes": 350000,
+    "max_archive_bytes": 100000000
+  },
+  "github": {
+    "max_requests": 150,
+    "max_pages": 5,
+    "timeout_seconds": 30
+  },
+  "rubric_id": "prototype-rubric-v1",
+  "response_contract": "compact-0.3.0",
+  "bot_logins": [
+    "coderabbitai[bot]",
+    "vercel[bot]",
+    "cursor[bot]",
+    "greptile-apps[bot]",
+    "qodo-code-review[bot]",
+    "codeant-ai[bot]"
+  ],
+  "seeds": [
+    {
+      "repo": "sveltejs/svelte",
+      "pr": 18042
+    },
+    {
+      "repo": "vuejs/core",
+      "pr": 12359
+    },
+    {
+      "repo": "YJSN180/nico-ranking-custom",
+      "pr": 540
+    },
+    {
+      "repo": "OpenCut-app/OpenCut",
+      "pr": 479
+    },
+    {
+      "repo": "rmems/synthetic-factory",
+      "pr": 134
+    },
+    {
+      "repo": "rjmurillo/ai-agents",
+      "pr": 5078
+    },
+    {
+      "repo": "LAF-US/loganfinney",
+      "pr": 19
+    },
+    {
+      "repo": "mokaradag/MERGEN-Bilge",
+      "pr": 705
+    },
+    {
+      "repo": "TaimoorSiddiquiOfficial/HopCode",
+      "pr": 84
+    }
+  ]
+}
