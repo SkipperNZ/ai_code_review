@@ -1,6 +1,6 @@
 # Перенос рабочего прототипа
 
-Для **уже адаптированной** корпоративной ветки использовать [отдельную инструкцию слияния для GLM](../UPGRADE_FOR_CORPORATE_AGENT.md). Она описывает delta от 4741f1f до 1bb6ae2 и подключения к существующему агенту на основе Qwen Code без повторного внедрения GitHub/Pi.
+Для **уже адаптированной** корпоративной ветки использовать [отдельную инструкцию слияния для GLM](../UPGRADE_FOR_NESSY.md). Она описывает delta от 4741f1f до 1bb6ae2 и подключения к существующему Nessy на основе Qwen Code без повторного внедрения GitHub/Pi.
 
 Для текущего detector сохранить [независимый human-аудит](17-ambiguity-human-audit.md): H для отбора и reference контекстной зависимости — разные записи. Offline packets/scorer не требуют Pi, GitHub API или model endpoint. GitHub connector capture можно импортировать `scripts/import_public_capture.py <capture.json> --data <новая-папка> --bot <bot-login>`: нужны явные public metadata и ограниченные API pages, сетевой budget равен нулю.
 
