@@ -1,8 +1,16 @@
 # Перенос рабочего прототипа
 
+Для текущего detector сохранить [независимый human-аудит](17-ambiguity-human-audit.md): H для отбора и reference контекстной зависимости — разные записи. Offline packets/scorer не требуют Pi, GitHub API или model endpoint. GitHub connector capture можно импортировать `scripts/import_public_capture.py <capture.json> --data <новая-папка> --bot <bot-login>`: нужны явные public metadata и ограниченные API pages, сетевой budget равен нулю.
+
+Перед переносом прочитать [уточнённый протокол от 27 октября](15-context-dependence.md). Нужны независимые L по comment+snippet и R через free planning по репозиторию, сопоставление с H, затем целевая проверка кандидатов H=R≠L. Текущий общий assessment contract и tools — инфраструктура; целевой pipeline уже реализован в ambiguity.py; [его контракт и запуск](16-ambiguity-runbook.md). Рабочие severity/complexity-, reaction/acceptance-классификаторы, метаранкер и post-processing уже существуют и не заменяются прототипом.
+
 Начать с README, runbook и `schemas/assessment.schema.json`. Скопировать исходники, schemas, prompts, tests, примеры и lockfiles. `data/`, `runs/`, `.venv`, `node_modules`, ключи и локальные конфиги не нужны в исходном пакете. GitHub данные остаются публичным экспериментом, а не рабочими labels.
 
 ## Границы адаптеров
+
+Для нового протокола точка координации — `src/aicr/ambiguity.py`, а transport boundary — `src/aicr/pi_runtime.py:execute_pi`. Corporate runner должен принимать тот же blinded job (task, context, schema, snapshot, limits), возвращать assessment и canonical shown_chunks, statuses/usage/trace и выполнять каждый E/L/R/V/control в отдельной сессии. Не переносить в L автоматический repo crawling, AGENTS discovery или общую память предыдущих проходов. H и scores рабочего ранкера остаются в post-hoc хранилище.
+
+Новые model contracts — `schemas/ambiguity-claim.schema.json`, `ambiguity-assessment.schema.json`, `ambiguity-verification.schema.json`. Нормализованный человеческий endorsement имеет отдельную `ambiguity-human.schema.json`; thumb proxy должен оставаться помеченным proxy. В `execute_pi` итоговый event содержит status, assessment, shown_chunks, requests, tool_calls, generated_tokens и format_repair; Python проверяет schema, источники и cross-field rules. Это описание нашего boundary, а не выдуманные методы Nessy. Fixtures для нового пути — `tests/test_ambiguity.py` и `tests/test_ambiguity_pi.py`.
 
 | Интерфейс | Вход → выход | Что заменить |
 | --- | --- | --- |

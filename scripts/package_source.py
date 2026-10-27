@@ -12,13 +12,13 @@ args = parser.parse_args()
 if not args.version or any(c not in '0123456789.-abcdefghijklmnopqrstuvwxyz' for c in args.version):
     raise ValueError('Unsafe release version')
 names = ['.gitignore', 'AGENTS.md', 'README.md', 'pyproject.toml', 'requirements.txt',
-         'package.json', 'package-lock.json', 'tsconfig.json', 'aicr.ps1']
+         'package.json', 'package-lock.json', 'tsconfig.json', 'aicr.ps1', 'configs/default.example.json']
 files = [root / n for n in names]
 for folder, pattern in [('src', '*.py'), ('worker', '*.ts'), ('schemas', '*.json'), ('prompts', '*.txt'),
                         ('docs', '*.md'), ('examples', '*.jsonl'), ('tests', '*.py'), ('scripts', '*.py')]:
     files += list((root / folder).rglob(pattern))
 payloads = {p.relative_to(root).as_posix(): p.read_bytes() for p in sorted(files) if p.is_file()}
-config = json.loads((root / 'configs/default.json').read_text(encoding='utf-8'))
+config = json.loads((root / 'configs/default.example.json').read_text(encoding='utf-8'))
 config['model'].update(base_url='http://127.0.0.1:8000/v1', id='SET_MODEL_ID', api_key_file='')
 payloads['configs/default.json'] = (json.dumps(config, indent=2) + '\n').encode()
 payloads['PORTABLE_SETUP.txt'] = (

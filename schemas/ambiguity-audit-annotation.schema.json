@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aicr:ambiguity-audit-annotation:1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["audit_id", "packet_id", "phase", "source_kind", "annotator_key", "decision", "rationale", "model_outputs_unseen", "human_signal_unseen"],
+  "properties": {
+    "audit_id": {"type": "string", "pattern": "^audit-[0-9a-f]{24}$"},
+    "packet_id": {"type": "string", "pattern": "^[0-9a-f]{24}$"},
+    "phase": {"enum": ["local", "repository"]},
+    "source_kind": {"enum": ["human_manual", "synthetic_test_fixture"]},
+    "annotator_key": {"type": "string", "minLength": 1, "maxLength": 100},
+    "decision": {"enum": ["accept", "reject", "unknown"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "model_outputs_unseen": {"const": true},
+    "human_signal_unseen": {"const": true},
+    "evaluability": {"enum": ["sufficient", "insufficient"]},
+    "context_dependency": {"enum": ["required", "not_required", "external", "unresolved"]},
+    "missing_premise": {"type": ["string", "null"]},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "start_line", "end_line", "excerpt"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "start_line": {"type": "integer", "minimum": 1},
+          "end_line": {"type": "integer", "minimum": 1},
+          "excerpt": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"phase": {"const": "local"}}}, "then": {
+      "required": ["evaluability"],
+      "not": {"anyOf": [{"required": ["context_dependency"]}, {"required": ["missing_premise"]}, {"required": ["evidence"]}]}
+    }},
+    {"if": {"properties": {"phase": {"const": "repository"}}}, "then": {
+      "required": ["context_dependency", "missing_premise", "evidence"],
+      "not": {"required": ["evaluability"]}
+    }}
+  ]
+}

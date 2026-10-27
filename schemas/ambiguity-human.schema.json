@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aicr:ambiguity-human:1.0.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["sample_id", "scale_id", "label", "source_kind", "source_ref", "annotator_key"],
+  "properties": {
+    "sample_id": {"type": "string", "minLength": 1},
+    "scale_id": {"const": "comment-endorsement-v1"},
+    "label": {"enum": ["accept", "reject", "unknown"]},
+    "source_kind": {"enum": ["manual", "explicit_acceptance_proxy", "synthetic_reference"]},
+    "source_ref": {"type": "string", "minLength": 1},
+    "annotator_key": {"type": ["string", "null"], "minLength": 1}
+  }
+}

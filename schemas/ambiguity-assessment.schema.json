@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aicr:ambiguity-assessment:1.0.0",
+  "description": "Comment endorsement, not severity or a prediction of a particular user's intention.",
+  "type": "object", "additionalProperties": false,
+  "required": ["decision", "evaluability", "rationale", "missing_context", "evidence_links"],
+  "properties": {
+    "decision": {"enum": ["accept", "reject", "unknown"]},
+    "evaluability": {"enum": ["sufficient", "insufficient"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "missing_context": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "evidence_links": {"type": "array", "maxItems": 8, "uniqueItems": true, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_chunk_id", "relation"],
+      "properties": {"source_chunk_id": {"type": "string", "minLength": 1}, "relation": {"enum": ["supports", "refutes", "context"]}}
+    }}
+  }
+}

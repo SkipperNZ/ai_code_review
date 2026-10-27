@@ -1,3 +1,5 @@
+Для нового L/R/H detector использовать [отдельный контекстный аудит](17-ambiguity-human-audit.md). Ниже сохранён аудит прежнего общего judge.
+
 # Независимый ручной аудит
 
 `export-human` создаёт слепые JSONL packets: comment, snippet, необязательный rationale, snapshot ID и показанные chunks. `assessment` и `annotator_key` пусты. Индекс с источниками сохраняется отдельно в `.index.json`; его нельзя открывать до фиксации независимой factual annotation, иначе через GitHub можно увидеть пользовательские реакции или поздние исправления.

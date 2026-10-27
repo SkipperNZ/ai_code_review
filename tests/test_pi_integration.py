@@ -88,7 +88,7 @@ def test_real_pi_with_mock(tmp_path, scenario, expected, contract, monkeypatch):
     server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    config = read_json(ROOT / 'configs/default.json')
+    config = read_json(ROOT / 'configs/default.example.json')
     config['response_contract'] = contract
     config['model'].update(base_url=f'http://127.0.0.1:{server.server_port}/v1', api_key_env='AICR_MOCK_KEY', api_key_file='')
     monkeypatch.setenv('AICR_MOCK_KEY', 'fixture-nonsecret')

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aicr:ambiguity-claim:1.0.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["status", "claim_excerpt", "rationale"],
+  "properties": {
+    "status": {"enum": ["identified", "not_identified"]},
+    "claim_excerpt": {"type": ["string", "null"], "minLength": 1, "maxLength": 2000},
+    "rationale": {"type": "string", "minLength": 1}
+  }
+}

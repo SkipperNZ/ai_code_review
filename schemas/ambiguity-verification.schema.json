@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aicr:ambiguity-verification:1.0.1",
+  "type": "object", "additionalProperties": false,
+  "required": ["outcome", "resolved_decision", "missing_local_premise", "local_insufficiency_explanation", "rationale", "decisive_links"],
+  "properties": {
+    "outcome": {"enum": ["context_dependency_supported", "not_supported", "external_context_needed", "unresolved"]},
+    "resolved_decision": {"enum": ["accept", "reject", "unknown"]},
+    "missing_local_premise": {"type": ["string", "null"], "minLength": 1},
+    "local_insufficiency_explanation": {"type": ["string", "null"], "minLength": 1},
+    "rationale": {"type": "string", "minLength": 1},
+    "decisive_links": {"type": "array", "maxItems": 4, "uniqueItems": true, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_chunk_id", "relation"],
+      "properties": {"source_chunk_id": {"type": "string", "minLength": 1}, "relation": {"enum": ["supports", "refutes"]}}
+    }},
+    "context_links": {"type": "array", "maxItems": 8, "uniqueItems": true, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_chunk_id", "relation"],
+      "properties": {"source_chunk_id": {"type": "string", "minLength": 1}, "relation": {"const": "context"}}
+    }}
+  }
+}

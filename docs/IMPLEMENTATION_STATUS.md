@@ -1,6 +1,10 @@
 # Ход реализации
 
-Инженерный прототип реализован и проверен. [Итоговый отчёт](13-prototype-results.md) отделяет техническую работоспособность от качества teacher. Независимые human labels и эффекты на качестве ещё не измерены.
+Инженерный прототип общего judge реализован и проверен. После уточнения цели 27 октября основной сценарий — [L: comment+snippet, R: независимый free planning, H: человеческая оценка, затем проверка кандидатов H=R≠L](15-context-dependence.md). Существующие collector, snapshots, Pi tools и local/agent sessions дают основу, и теперь реализованы целевой comparator, отдельный ambiguity-verification pass и контроли L_repeat/L_plus_context; [запуск и ограничения](16-ambiguity-runbook.md). Показатели 15/16 и JSON/evidence validity не измеряют качество такого детектора.
+
+[Итоговый отчёт](13-prototype-results.md) фиксирует прежний инженерный этап. Независимые human labels и метрики целевого детектора ещё не измерены. [Новый pilot](18-ambiguity-pilot.md) содержит synthetic controls и четыре реальных reacted comments; [отдельный human-аудит](17-ambiguity-human-audit.md) реализован без создания labels.
+
+В новой версии прошли **112 Python tests**, TypeScript typecheck и **8 worker tests**. Новые проверки включают полный L/R/H/V/control путь через настоящий Pi SDK с loopback provider, provider failure/timeout/JSON errors, blinding, exact snippet, outside-local evidence, frozen resume и human-audit import. Tests используют публичный config template, не зависят от локального credential file. Расширенный capture импортируется offline; missing reaction pages остаются incomplete, а не восстанавливаются из summary counts.
 
 | Этап | Состояние |
 | --- | --- |
@@ -13,7 +17,7 @@
 | P6 Human pilot | Подготовлено 240 слепых packets; human annotations и независимый locked holdout отсутствуют |
 | P7 Оценка и пакет переноса | Инженерные метрики, diagnostics/CSV, post-hoc triage, human import, runbook/handoff и итоговый отчёт готовы; human quality metrics не измерены |
 
-69 Python tests прошли, включая 18 реальных Pi SDK loopback scenarios для двух response contracts, collector/discovery, восстановление interrupted queue, compact response compiler, p95 nearest-rank, сравнение прогонов, неопределённых reaction actors и проверку ZIP. TypeScript typecheck и 8 tests tools прошли. Это инженерные проверки, не подтверждённые review labels.
+На прежнем этапе 69 Python tests прошли, включая 18 реальных Pi SDK loopback scenarios для двух response contracts, collector/discovery, восстановление interrupted queue, compact response compiler, p95 nearest-rank, сравнение прогонов, неопределённых reaction actors и проверку ZIP. TypeScript typecheck и 8 tests tools прошли. Это инженерные проверки, не подтверждённые review labels.
 
 В [последующей итерации](14-hardening.md) вход получил номера строк и temporal metadata; tools возвращают подсказки для неверных путей/диапазонов. На заранее выбранных 16 samples первый повтор `hardening-v02-63c3729bc8d9` дал 12 валидных assessments против прежних 4: восстановлено 9 failures, возникла одна регрессия. Новый основной `compact-0.3.0` отдельно проверен на тех же 16 samples: 15 ok / 1 json_invalid, 11 восстановленных failures и ноль регрессий относительно исходного smoke; относительно промежуточной версии есть одна регрессия. Результаты разных контрактов не смешиваются. CLI `compare` и `scripts/verify_package.py` работают offline.
 
