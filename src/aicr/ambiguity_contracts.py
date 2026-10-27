@@ -8,7 +8,7 @@ from .contracts import chunk
 from .io import ROOT, digest, read_json, read_jsonl
 
 SCALE = 'comment-endorsement-v1'
-PROTOCOL = 'ambiguity-1.0.1'
+PROTOCOL = 'ambiguity-1.0.2'
 STAGES = {'E': 'claim', 'L': 'assessment', 'R': 'assessment', 'V': 'verification',
           'L_repeat': 'assessment', 'L_plus_context': 'assessment'}
 

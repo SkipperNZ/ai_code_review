@@ -13,11 +13,12 @@ if (-not (Test-Path configs/default.json)) {
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 npm.cmd ci --ignore-scripts --no-audit --no-fund
+New-Item -ItemType Directory -Force .cache | Out-Null
 ```
 
 На текущем десктопе `ensurepip` в базовом Python не сработал; окружение создано с `--without-pip --system-site-packages` и использует уже установленные зависимости. Это ограничение текущей установки, не обязательная настройка проекта. requirements.txt фиксирует фактически проверенные версии.
 
-На Linux создать venv тем же способом; команды Python запускать как `PYTHONPATH=src .venv/bin/python -m aicr ...`. Node worker использует встроенное выполнение TypeScript, отдельная сборка не нужна.
+На Linux создать venv тем же способом и выполнить `mkdir -p .cache`; команды Python запускать как `PYTHONPATH=src .venv/bin/python -m aicr ...`. Каталог .cache нужен родительскому пути явного pytest --basetemp; pytest сам не создаёт отсутствующих родителей. Node worker использует встроенное выполнение TypeScript, отдельная сборка не нужна.
 
 При клонировании на Linux сначала выполнить `cp configs/default.example.json configs/default.json`, если рабочего конфига ещё нет. В portable ZIP файл default.json уже подготовлен. Шаблон не содержит LAN-адреса и пути к пользовательскому ключу; рабочие configs/default.json и *.local.json игнорируются Git.
 

@@ -40,4 +40,41 @@ Synthetic H и ожидаемые свойства заданы по постр�
 
 Реализован [offline human-аудит](17-ambiguity-human-audit.md), включающий non-candidates. Exporter не создаёт labels. Synthetic и human references разделены; incomplete audit не выдаёт recall. Настоящий frozen resume amb-public-b-v101-8e34d2e229b7 после изменения рабочего дерева: stages_executed_now=0, model_requests_now=0.
 
-Расширенный capture и его bounded pilot фиксируются отдельно после завершения. Они не заменяют приведённые результаты и не создают human ground truth.
+## Расширенный реальный pilot
+
+Отдельный capture `data/reaction-expanded-20261027`: просмотрено 1000 repo-wide comments в трёх публичных repos; отбор целенаправленный по наличию thumbs. После исключения уже использованных примеров найдено 11 новых targets; один PR недоступен (404), поэтому он исключён с сохранением причины. Полные comment pages восьми доступных PR и actor-level reactions импортированы offline скриптом import_public_capture.py: 14 нормализованных comments, 6 positive и 4 negative human signals, ещё 4 incomplete. Эти четыре не объявляются no-reaction или negative. Получены 8 exact-SHA snapshots, все partial; body у всех 14 неизменён, anchors проверены. Первичные download timeouts разрешились одним повтором; старые snapshots не переписывались.
+
+Run `amb-expanded-v101-1a838bbf4ad1` использует 10 known-H strict samples:
+
+| Показатель | Результат |
+| --- | ---: |
+| Planned cases | 10 |
+| Cases с завершёнными E/L/R | 9 |
+| Input unavailable | 1: exact hunk превышает 160 строк |
+| Кандидаты H=R≠L | 6, все resolved_local_uncertainty |
+| Model-supported после V/L_repeat/C | 3 |
+| External context needed | 1 |
+| V расходится с R | 1 |
+| C не воспроизводит R | 1 |
+| Non-candidates среди выполненных | 3 |
+| Model requests / tools | 106 / 92 |
+| Generated tokens / format repairs | 73501 / 9 |
+| Сумма stage wall time | 920.154 s |
+
+Один особенно показательный отрицательный [пример libmagic](https://github.com/Nuitka/Nuitka/pull/2830#discussion_r1584548166): по YAML snippet L не знает, нужна ли предлагаемая настройка file_extensions. R/V находят schema с additionalProperties=false, фактический параметр suffixes, его обработчик и default extensions. R/V/C=reject при исходном negative thumb, L/L_repeat=unknown. Это как раз гипотеза «пользователь знает формат проекта, а local judge его не видит». Её смысловую корректность ещё должен проверить независимый человек.
+
+Два других model-supported примера — [nested loop test](https://github.com/Nuitka/Nuitka/pull/3757#discussion_r2785774380) и [function reformulation](https://github.com/Nuitka/Nuitka/pull/3813#discussion_r2921978056), оба с positive H proxy. Наблюдений уверенного переворота accept↔reject у L здесь нет: все кандидаты связаны с исходным unknown. Распространённость такой ситуации в production не измерена.
+
+Недоступный input не был молча усечён. В этом frozen run его legacy conclusion называется unresolved; status=input_unavailable однозначно фиксирует техническую причину. После прогона код получил отдельные conclusions input_unavailable/claim_unavailable/assessment_unavailable. Старый case и метрики не исправлялись задним числом.
+
+Также исправлена будущая сборка snapshots: collection_policy=historical-text-2 помечает partial при пропуске sensitive/unsafe paths, symlinks, binary или non-UTF8 файлов. Раньше часть этих пропусков не отражалась в partial flag. Уже собранные blobs/метрики не пересозданы; все реальные snapshots этого pilot и так имели partial=true из-за бюджетов. Полный textual snapshot не доказывает отсутствие внешних требований или динамических вызовов.
+
+Алгоритм показывает зависимость оценки от доступного контекста, но не восстанавливает достоверно мотив исторической реакции человека. Эти результаты не создают human ground truth и не обосновывают обучение classifier без следующего независимого аудита.
+
+## Финальное усиление blinding: 1.0.2
+
+В 1.0.1 модели передавался непрозрачный hash полного run ID. Он не раскрывал label, но косвенно менялся при замене H: H входил в outer identity. В 1.0.2 видимый ID зависит только от протокола и snapshot hash. Regression test меняет H и описательное имя запуска и проверяет полное равенство запросов E/L/R, кроме runtime_dir, который не отправляется модели. Внешний run identity по-прежнему сохраняет human hashes для provenance.
+
+Новый bounded run `amb-blinding-v102-c987fafb4135` на двух missing-callee controls: 2/2 model-supported, все E/L/R/V/repeat/context stages прошли validators. 26 requests, 16 tools, 7644 generated tokens, 129.938 s stage wall time, 2 repairs. Это повтор synthetic controls для проверки изменения, не два новых независимых samples. Реальный corpus повторно не запускался; его результаты выше относятся к 1.0.1.
+
+Финальный suite: 119 Python tests, TypeScript typecheck и 8 worker tests. Отдельная чистая копия исходного portable archive с sanitized config прошла предыдущие 118 tests после создания обязательного родительского .cache; Python и npm dependencies использовались из уже установленной среды. Setup дополнен этим шагом. Новые archives не перезаписывают предыдущие версии; финальная переносимая версия — 0.3.1.

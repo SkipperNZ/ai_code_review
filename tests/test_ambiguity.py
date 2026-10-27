@@ -223,7 +223,7 @@ def test_full_protocol_same_local_input_different_project(tmp_path, monkeypatch,
         ambiguity.evaluate_ambiguity(Path(result['directory']))
 
 
-@pytest.mark.parametrize('option,conclusion', [('bad_repository', 'not_selected'),
+@pytest.mark.parametrize('option,conclusion', [('bad_repository', 'assessment_unavailable'),
                                              ('local_changed', 'local_instability_or_repeat_unavailable'),
                                              ('disagree_verifier', 'verifier_disagrees_with_repository')])
 def test_protocol_cannot_confirm_on_invalid_or_unstable_assessments(tmp_path, monkeypatch, option, conclusion):
@@ -263,3 +263,34 @@ def test_duplicate_sample_identity_is_rejected_before_selection(tmp_path, monkey
     monkeypatch.setattr(ambiguity, 'doctor', lambda _: pytest.fail('Duplicate reached preflight'))
     with pytest.raises(ValueError, match='Duplicate normalized'):
         ambiguity.run_ambiguity(data, tmp_path / 'runs', {}, synthetic_demo=True, human_file=humans)
+
+
+def test_unavailable_input_is_not_a_model_uncertainty_judgment(tmp_path, monkeypatch):
+    data, sample, _, humans = fixture_data(tmp_path)
+    monkeypatch.setattr(ambiguity, 'doctor', lambda _: {'ok': True, 'deployment_fingerprint': 'fixture'})
+    monkeypatch.setattr(ambiguity, 'execute_pi', lambda *args: pytest.fail('Unavailable snippet reached a model request'))
+    config = read_json(ROOT / 'configs/default.example.json'); config['ambiguity'] = {'max_local_lines': 1}
+    result = ambiguity.run_ambiguity(data, tmp_path / 'runs', config, human_file=humans, synthetic_demo=True)
+    case = read_json(Path(result['directory']) / sample['id'] / 'case.json')
+    assert case['status'] == case['conclusion'] == 'input_unavailable'
+    assert not case['candidate'] and result['executed_now']['model_requests_now'] == 0
+
+
+def test_changing_h_or_run_name_cannot_perturb_blinded_model_input(tmp_path, monkeypatch):
+    data, _, _, humans = fixture_data(tmp_path)
+    calls = []
+    monkeypatch.setattr(ambiguity, 'doctor', lambda _: {'ok': True, 'deployment_fingerprint': 'fixture'})
+    monkeypatch.setattr(ambiguity, 'execute_pi', fake_transport(calls))
+    config = read_json(ROOT / 'configs/default.example.json')
+    first = ambiguity.run_ambiguity(data, tmp_path / 'runs', config, name='rejected', human_file=humans, synthetic_demo=True)
+    before = {name: job for name, job in calls if name in {'E', 'L', 'R'}}
+    rows = [json.loads(line) for line in humans.read_text().splitlines()]
+    rows[0]['label'] = 'accept'; write_jsonl(humans, rows)
+    calls.clear()
+    second = ambiguity.run_ambiguity(data, tmp_path / 'runs', config, name='liked', human_file=humans, synthetic_demo=True)
+    after = dict(calls)
+    assert first['run_id'] != second['run_id'] and not second['metrics']['candidates']
+    assert set(after) == {'E', 'L', 'R'}
+    for stage in before:
+        assert {k: v for k, v in before[stage].items() if k != 'runtime_dir'} == {
+            k: v for k, v in after[stage].items() if k != 'runtime_dir'}

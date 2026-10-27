@@ -17,14 +17,20 @@ def build_archive_snapshot(repo: str, sha: str, content: bytes, limits: dict) ->
         raise ValueError('Expected exact Git commit SHA')
     snapshot = {'id': 'snap-' + digest(repo + ':' + sha)[:24], 'repo_id': repo, 'commit_sha': sha, 'captured_at': now(),
                 'source_url': f'https://codeload.github.com/{repo}/tar.gz/{sha}', 'archive_sha256': digest_bytes(content),
-                'files': {}, 'skipped': {}, 'partial': False}
+                'collection_policy': 'historical-text-2', 'files': {}, 'skipped': {}, 'partial': False}
     size = 0
     with tarfile.open(fileobj=io.BytesIO(content), mode='r:gz') as archive:
         for member in archive:
-            if not member.isfile():
+            if member.isdir():
                 continue
             path = member.name.partition('/')[2]
             if not safe_repo_path(path) or SENSITIVE.search(path):
+                snapshot['partial'] = True
+                snapshot['skipped']['__excluded_paths__'] = 'unsafe_or_sensitive_paths_omitted'
+                continue
+            if not member.isfile():
+                snapshot['partial'] = True
+                snapshot['skipped'][path] = 'non_regular_member'
                 continue
             if member.size > limits['max_file_bytes']:
                 snapshot['skipped'][path] = 'file_size_limit'
@@ -36,10 +42,13 @@ def build_archive_snapshot(repo: str, sha: str, content: bytes, limits: dict) ->
                 break
             raw = archive.extractfile(member).read()
             if b'\x00' in raw:
+                snapshot['partial'] = True
+                snapshot['skipped'][path] = 'binary_file'
                 continue
             try:
                 text = raw.decode('utf-8')
             except UnicodeDecodeError:
+                snapshot['partial'] = True
                 snapshot['skipped'][path] = 'non_utf8'
                 continue
             text = text.replace('\r\n', '\n').replace('\r', '\n')

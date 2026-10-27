@@ -110,6 +110,25 @@ def test_archive_never_extracts_symlinks_or_traversal(tmp_path):
     assert list(tmp_path.iterdir()) == []
 
 
+@pytest.mark.parametrize('omission', [None, 'sensitive', 'binary', 'non_utf8', 'symlink'])
+def test_snapshot_completeness_accounts_for_all_omitted_file_content(omission):
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode='w:gz') as tar:
+        info = tarfile.TarInfo('root/code.py'); info.size = 4; tar.addfile(info, io.BytesIO(b'pass'))
+        if omission == 'symlink':
+            link = tarfile.TarInfo('root/alias.py'); link.type = tarfile.SYMTYPE; link.linkname = 'code.py'; tar.addfile(link)
+        elif omission:
+            name, content = {'sensitive': ('.env', b'secret'), 'binary': ('asset.bin', b'a\x00b'),
+                             'non_utf8': ('legacy.py', b'# coding:cp1251\n# \xff\n')}[omission]
+            info = tarfile.TarInfo('root/' + name); info.size = len(content); tar.addfile(info, io.BytesIO(content))
+    snapshot = build_archive_snapshot('example/fixture', 'a' * 40, stream.getvalue(),
+                                     {'max_files': 100, 'max_total_bytes': 10000, 'max_file_bytes': 1000})
+    assert snapshot['partial'] is (omission is not None)
+    assert bool(snapshot['skipped']) is (omission is not None)
+    assert snapshot['collection_policy'] == 'historical-text-2'
+    assert list(snapshot['files']) == ['code.py']
+
+
 def test_edited_comment_is_not_historical_ground_truth():
     c = {'id': 1, 'body': '_Functional_ | _Major_\n\nReal finding.\n<details>Agent instructions</details>',
          'user': {'type': 'Bot', 'login': 'coderabbitai[bot]'}, 'created_at': '2026-01-01T00:00:00Z',

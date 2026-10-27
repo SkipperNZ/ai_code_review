@@ -1,6 +1,6 @@
 # Запуск L/R/H detector
 
-Протокол `ambiguity-1.0.1` реализует постановку пользователя от 27 октября. Он работает поверх существующего collector/snapshot/Pi runtime и не заменяет рабочие heads или метаранкер. Старый CLI `run` остаётся общим judge с severity/complexity; для новой задачи использовать `ambiguity-run`.
+Протокол `ambiguity-1.0.2` реализует постановку пользователя от 27 октября. Он работает поверх существующего collector/snapshot/Pi runtime и не заменяет рабочие heads или метаранкер. Старый CLI `run` остаётся общим judge с severity/complexity; для новой задачи использовать `ambiguity-run`.
 
 ## Этапы и шкала
 
@@ -19,7 +19,7 @@ Model-supported outcome остаётся кандидатом на ручной 
 
 Если sample содержит `student_snippet: {path, start_line, end_line, excerpt?}`, используется именно этот исторический диапазон; переданный excerpt проверяется против blob. Иначе snippet извлекается из RIGHT-side строк исходного diff hunk и проверяется по SHA. Это доступное GitHub-приближение входа рабочего ранкера. Нет неявного окна ±12 и нет молчаливого усечения. Anchor должен входить в диапазон; по умолчанию max_local_lines=160, превышение даёт input_unavailable.
 
-`student_features_hash` фиксирует comment+текст snippet, а `local_input_hash` дополнительно фиксирует canonical source metadata. Одинаковые тексты в двух fixtures имеют одинаковый feature hash; непрозрачные source IDs сохраняют разные provenance. Имена sample/run хешируются перед отправкой модели, чтобы название вроде «negative-case» не раскрывалось как подсказка.
+`student_features_hash` фиксирует comment+текст snippet, а `local_input_hash` дополнительно фиксирует canonical source metadata. Одинаковые тексты в двух fixtures имеют одинаковый feature hash; непрозрачные source IDs сохраняют разные provenance. Sample ID хешируется, а видимый run ID строится только из версии протокола и snapshot hash. Он не зависит от H или описательного имени запуска. Поэтому замена человеческой оценки или run name не меняет blinded E/L/R input; это отдельно проверяется regression test.
 
 ## Источник H
 
@@ -76,6 +76,7 @@ Dry-run проверяет source, dependency lock, sample/snapshot/human hashes
 
 ```powershell
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+New-Item -ItemType Directory -Force .cache | Out-Null
 .\.venv\Scripts\python.exe -m pytest -q --basetemp .cache/pytest
 npm.cmd run typecheck
 npm.cmd run test:worker
@@ -90,3 +91,5 @@ Loopback integration исполняет реальный Pi SDK. Он прове
 Дополнительные controls: `.venv/Scripts/python.exe scripts/make_ambiguity_controls.py`, затем ambiguity-run с data/ambiguity-controls-v1 и явным synthetic-demo. Они включают missing-callee pair и два locally decidable примера.
 
 В V массив context_links содержит фоновые/local citations; decisive_links допускает только supports/refutes и полностью outside-local диапазоны.
+
+Новые snapshots с collection_policy=historical-text-2 получают partial=true при любом пропуске содержимого файла: лимиты, sensitive/unsafe paths, symlink, binary, non-UTF8. Старые captures не пересоздаются. Даже partial=false означает полноту доступного textual archive, не отсутствие внешних/динамических условий. Технические conclusions input_unavailable/claim_unavailable/assessment_unavailable отделены от модельного unresolved.

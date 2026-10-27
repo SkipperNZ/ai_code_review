@@ -42,6 +42,7 @@
         "id": {"type": "string"}, "repo_id": {"type": "string"}, "commit_sha": {"$ref": "#/$defs/sha"},
         "archive_sha256": {"$ref": "#/$defs/hash"}, "captured_at": {"type": "string", "format": "date-time"},
         "source_url": {"type": "string", "format": "uri"}, "partial": {"type": "boolean"}, "skipped": {"type": "object"},
+        "collection_policy": {"enum": ["historical-text-2"]},
         "files": {"type": "object", "additionalProperties": {"type": "object", "required": ["text", "raw_sha256", "text_sha256"],
           "properties": {"text": {"type": "string"}, "raw_sha256": {"$ref": "#/$defs/hash"}, "text_sha256": {"$ref": "#/$defs/hash"}}}}
       }

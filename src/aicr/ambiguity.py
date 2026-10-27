@@ -24,9 +24,10 @@ def _stage(stage: str, context: dict, sample: dict, snapshot: dict, config: dict
     limits = dict(config['limits'])
     if mode == 'local':
         limits.update(max_turns=2, max_tool_calls=0, wall_seconds=min(180, limits['wall_seconds']))
-    # Hash-only run identity prevents a user-supplied run name leaking its selection criterion.
+    # Visible identity must not depend even indirectly on H or a descriptive run name.
+    # H stays in the outer run manifest; it cannot perturb an otherwise identical L/R request.
     job = {'task': 'Return the requested protocol result using only the supplied input and schema.',
-           'sample_id': digest(sample['id'])[:24], 'run_id': digest(run_id)[:24], 'mode': mode, 'context': context,
+           'sample_id': digest(sample['id'])[:24], 'run_id': digest([PROTOCOL, snapshot_hash])[:24], 'mode': mode, 'context': context,
            'snapshot': snapshot, 'limits': limits,
            'system_prompt': (execution / 'prompts' / prompt).read_text(encoding='utf-8'),
            'schema': schema_for(kind, execution),
@@ -92,12 +93,12 @@ def _base_context(sample: dict, local: list[dict], claim: dict) -> dict:
 def _sample_run(sample, snapshot, config, run_id, directory, execution, human, snapshot_hash, retry_failed, activity):
     row = {'protocol': PROTOCOL, 'sample_id': sample['id'], 'run_id': run_id, 'scale_id': SCALE,
            'source_url': sample.get('source_url'), 'strict_eligible': sample.get('strict_eligible', False),
-           'human': human, 'stages': {}, 'candidate': False, 'conclusion': 'unresolved',
+           'human': human, 'stages': {}, 'candidate': False, 'conclusion': 'not_evaluated',
            'ambiguity_gold_label': None, 'annotation_source': 'model_generated_not_human_context_audit'}
     try:
         c, policy = snippet_for(sample, snapshot, config.get('ambiguity', {}).get('max_local_lines', 160))
     except (ValueError, KeyError, TypeError) as exc:
-        row.update(status='input_unavailable', error=str(exc))
+        row.update(status='input_unavailable', conclusion='input_unavailable', error=str(exc))
         return row
     local = [c]
     row.update(local_chunks=local, snippet_policy=policy,
@@ -111,7 +112,7 @@ def _sample_run(sample, snapshot, config, run_id, directory, execution, human, s
     extraction = stage('E', {'input_contract': 'ambiguity-extraction-1', 'comment': sample['comment_text'], 'chunks': []})
     claim = _assessment(extraction)
     if not claim or claim['status'] != 'identified':
-        row.update(status='claim_unavailable')
+        row.update(status='claim_unavailable', conclusion='claim_unavailable')
         return row
     shared_claim = {'claim_id': digest(claim['claim_excerpt'])[:24], 'text': claim['claim_excerpt']}
     row['core_claim'] = shared_claim
@@ -124,7 +125,7 @@ def _sample_run(sample, snapshot, config, run_id, directory, execution, human, s
     if not _assessment(l) or not _assessment(r):
         row['status'] = 'assessment_failure'
     if not comparison['candidate']:
-        row['conclusion'] = 'not_selected'
+        row['conclusion'] = 'assessment_unavailable' if row['status'] == 'assessment_failure' else 'not_selected'
         return row
     # L_repeat receives the same context and rubric as L; not its earlier answer.
     repeat = stage('L_repeat', copy.deepcopy(base))
@@ -260,7 +261,7 @@ def run_ambiguity(data: Path, runs: Path, config: dict, *, name='ambiguity', lim
 
 def evaluate_ambiguity(directory: Path) -> dict:
     manifest = read_json(directory / 'manifest.json')
-    if manifest['identity']['protocol'] not in {'ambiguity-1.0.0', PROTOCOL}:
+    if manifest['identity']['protocol'] not in {'ambiguity-1.0.0', 'ambiguity-1.0.1', PROTOCOL}:
         raise ValueError('Not an ambiguity run')
     rows = []
     case_hashes = read_json(directory / 'case-hashes.json')

@@ -2,9 +2,9 @@
 
 Инженерный прототип общего judge реализован и проверен. После уточнения цели 27 октября основной сценарий — [L: comment+snippet, R: независимый free planning, H: человеческая оценка, затем проверка кандидатов H=R≠L](15-context-dependence.md). Существующие collector, snapshots, Pi tools и local/agent sessions дают основу, и теперь реализованы целевой comparator, отдельный ambiguity-verification pass и контроли L_repeat/L_plus_context; [запуск и ограничения](16-ambiguity-runbook.md). Показатели 15/16 и JSON/evidence validity не измеряют качество такого детектора.
 
-[Итоговый отчёт](13-prototype-results.md) фиксирует прежний инженерный этап. Независимые human labels и метрики целевого детектора ещё не измерены. [Новый pilot](18-ambiguity-pilot.md) содержит synthetic controls и четыре реальных reacted comments; [отдельный human-аудит](17-ambiguity-human-audit.md) реализован без создания labels.
+[Итоговый отчёт](13-prototype-results.md) фиксирует прежний инженерный этап. Независимые human labels и метрики целевого детектора ещё не измерены. [Новый pilot](18-ambiguity-pilot.md) содержит synthetic controls и 14 реальных comments в отдельных bounded runs; [отдельный human-аудит](17-ambiguity-human-audit.md) реализован без создания labels.
 
-В новой версии прошли **112 Python tests**, TypeScript typecheck и **8 worker tests**. Новые проверки включают полный L/R/H/V/control путь через настоящий Pi SDK с loopback provider, provider failure/timeout/JSON errors, blinding, exact snippet, outside-local evidence, frozen resume и human-audit import. Tests используют публичный config template, не зависят от локального credential file. Расширенный capture импортируется offline; missing reaction pages остаются incomplete, а не восстанавливаются из summary counts.
+В новой версии прошли **119 Python tests**, TypeScript typecheck и **8 worker tests**. Новые проверки включают полный L/R/H/V/control путь через настоящий Pi SDK с loopback provider, provider failure/timeout/JSON errors, blinding, exact snippet, outside-local evidence, frozen resume и human-audit import. Tests используют публичный config template, не зависят от локального credential file. Расширенный capture импортируется offline; missing reaction pages остаются incomplete, а не восстанавливаются из summary counts.
 
 | Этап | Состояние |
 | --- | --- |
