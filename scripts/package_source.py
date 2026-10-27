@@ -12,7 +12,8 @@ args = parser.parse_args()
 if not args.version or any(c not in '0123456789.-abcdefghijklmnopqrstuvwxyz' for c in args.version):
     raise ValueError('Unsafe release version')
 names = ['.gitignore', 'AGENTS.md', 'README.md', 'pyproject.toml', 'requirements.txt',
-         'package.json', 'package-lock.json', 'tsconfig.json', 'aicr.ps1', 'configs/default.example.json']
+         'package.json', 'package-lock.json', 'tsconfig.json', 'aicr.ps1', 'configs/default.example.json',
+         'UPGRADE_FOR_CORPORATE_AGENT.md']
 files = [root / n for n in names]
 for folder, pattern in [('src', '*.py'), ('worker', '*.ts'), ('schemas', '*.json'), ('prompts', '*.txt'),
                         ('docs', '*.md'), ('examples', '*.jsonl'), ('tests', '*.py'), ('scripts', '*.py')]:

@@ -1,5 +1,7 @@
 # Перенос рабочего прототипа
 
+Для **уже адаптированной** корпоративной ветки использовать [отдельную инструкцию слияния для GLM](../UPGRADE_FOR_CORPORATE_AGENT.md). Она описывает delta от 4741f1f до 1bb6ae2 и подключения к существующему агенту на основе Qwen Code без повторного внедрения GitHub/Pi.
+
 Для текущего detector сохранить [независимый human-аудит](17-ambiguity-human-audit.md): H для отбора и reference контекстной зависимости — разные записи. Offline packets/scorer не требуют Pi, GitHub API или model endpoint. GitHub connector capture можно импортировать `scripts/import_public_capture.py <capture.json> --data <новая-папка> --bot <bot-login>`: нужны явные public metadata и ограниченные API pages, сетевой budget равен нулю.
 
 Перед переносом прочитать [уточнённый протокол от 27 октября](15-context-dependence.md). Нужны независимые L по comment+snippet и R через free planning по репозиторию, сопоставление с H, затем целевая проверка кандидатов H=R≠L. Текущий общий assessment contract и tools — инфраструктура; целевой pipeline уже реализован в ambiguity.py; [его контракт и запуск](16-ambiguity-runbook.md). Рабочие severity/complexity-, reaction/acceptance-классификаторы, метаранкер и post-processing уже существуют и не заменяются прототипом.
